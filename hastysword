@@ -1,0 +1,152 @@
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.UUID;
+
+public class hastysword extends JavaPlugin implements Listener {
+
+    private final HashMap<UUID, Long> cooldowns = new HashMap<>();
+    private final int cooldownTime = 30;
+    private final int manaCost = 60; 
+
+    @Override
+    public void onEnable() {
+        this.getCommand("cihasty").setExecutor(new CommandExecutor() {
+            @Override
+            public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+                if (sender instanceof Player) {
+                    Player player = (Player) sender;
+                    if (player.isOp()) {
+                        player.getInventory().addItem(createHastySword());
+                        player.sendMessage("§6[+]Hasty Sword");
+                        return true;
+                    } else {
+                        player.sendMessage("§cYou do not have permission to use this command!!");
+                        return true;
+                    }
+                } else if (sender instanceof ConsoleCommandSender) {
+                    sender.sendMessage("§cThis command can only be executed by a Admin");
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        // Register events
+        getServer().getPluginManager().registerEvents(this, this);
+    }
+
+    private ItemStack createHastySword() {
+        ItemStack sword = new ItemStack(Material.IRON_SWORD);
+        ItemMeta meta = sword.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName("§fHasty Sword");
+
+          
+            AttributeModifier damageModifier = new AttributeModifier(UUID.randomUUID(), "generic.attackDamage", 30, AttributeModifier.Operation.ADD_NUMBER);
+            meta.addAttributeModifier(Attribute.GENERIC_ATTACK_DAMAGE, damageModifier);
+            AttributeModifier speedModifier = new AttributeModifier(UUID.randomUUID(), "generic.movementSpeed", 0.05, AttributeModifier.Operation.ADD_NUMBER);
+            meta.addAttributeModifier(Attribute.GENERIC_MOVEMENT_SPEED, speedModifier);
+
+            // Add lore
+            meta.setLore(Arrays.asList(
+                "§7Damage: §c+30",
+                "§7Speed: §a+5%",
+                "§7",
+                "§6Ability: Haste Boost §e§lRIGHT CLICK",
+                "Increases your movement",
+"Speed by +30 for", 
+"30 seconds"
+                "§7Mana Cost: §b60",
+                "§7Cooldown: §a30s",
+                "§7",
+                "§e§lUNCOMMON SWORD"
+            ));
+
+            sword.setItemMeta(meta);
+        }
+        return sword;
+    }
+
+    @EventHandler
+    public void onPlayerUse(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        ItemStack item = player.getInventory().getItemInMainHand();
+
+        if (item.getItemMeta() != null && "§fHasty Sword".equals(item.getItemMeta().getDisplayName())) {
+            if (canUseAbility(player)) {
+                if (consumeMana(player, manaCost)) {
+                    useHasteBoost(player);
+                    startCooldown(player);
+                } else {
+                    player.sendMessage("§cYou don't have enough mana!");
+                }
+            } else {
+                player.sendMessage(" Cool-Down ");
+            }
+        }
+    }
+
+    private boolean canUseAbility(Player player) {
+        if (cooldowns.containsKey(player.getUniqueId())) {
+            long timeLeft = (cooldowns.get(player.getUniqueId()) - System.currentTimeMillis()) / 1000;
+            return timeLeft <= 0;
+        }
+        return true;
+    }
+
+    private void startCooldown(Player player) {
+        cooldowns.put(player.getUniqueId(), System.currentTimeMillis() + (cooldownTime * 1000));
+    }
+
+    private boolean consumeMana(Player player, int manaCost) {
+        
+        int playerMana = getPlayerMana(player);
+
+        if (playerMana >= manaCost) {
+            setPlayerMana(player, playerMana - manaCost);
+            return true;
+        }
+        return false;
+    }
+
+    private void useHasteBoost(Player player) {
+        player.sendMessage("§aYou used Haste Boost!");
+
+   
+        player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 3 * 20, 1, true, true));
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                player.sendMessage("Ability worn off");
+            }
+        }.runTaskLater(this, 3 * 20)
+}
+    private int getPlayerMana(Player player) {
+        return 100; 
+    }
+
+    private void setPlayerMana(Player player, int mana) {
+        
+        player.sendMessage("§bMana: " + mana);
+    }
+}
