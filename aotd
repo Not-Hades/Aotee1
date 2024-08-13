@@ -1,0 +1,149 @@
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import org.bukkit.Material;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.java.JavaPlugin;
+
+public class YourPlugin extends JavaPlugin implements Listener {
+
+    private final HashMap<UUID, Long> cooldowns = new HashMap<>();
+    private final int cooldownTime = 30; // Cooldown time in seconds
+    private final Set<UUID> unlockedPlayers = new HashSet<>();
+
+    @Override
+    public void onEnable() {
+        this.getCommand("giveaspectdragon").setExecutor(new CommandExecutor() {
+            @Override
+            public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+                if (sender instanceof Player) {
+                    Player player = (Player) sender;
+                    if (player.isOp()) {
+                        player.getInventory().addItem(createAspectOfTheDragon());
+                        player.sendMessage("§6You have been given the Aspect of the Dragon!");
+                        return true;
+                    } else {
+                        player.sendMessage("§cYou do not have permission to use this command.");
+                    }
+                }
+                return false;
+            }
+        });
+
+        getServer().getPluginManager().registerEvents(this, this);
+    }
+
+    private ItemStack createAspectOfTheDragon() {
+        ItemStack sword = new ItemStack(Material.DIAMOND_SWORD);
+        ItemMeta meta = sword.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName("§6Aspect of the Dragon");
+            meta.setCustomModelData(123); // Optional: Custom texture/model
+
+            // Add lore
+            meta.setLore(Arrays.asList(
+                "§7Damage: §c+225",
+                "§7Strength: §c+100",
+                "§7",
+                "§6Ability: Dragon Rage §e§lRIGHT CLICK",
+                "§7Launches nearby enemies into the air,",
+                "§7dealing §cdamage§7 to them.",
+                "§7",
+                "§8Cooldown: §a30s",
+                "§7Requires §bCombat Level XVII§7 to use.",
+                "§7"
+            ));
+
+            sword.setItemMeta(meta);
+        }
+        return sword;
+    }
+
+    @EventHandler
+    public void onPlayerUse(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        ItemStack item = player.getInventory().getItemInMainHand();
+
+        if (item.getItemMeta() != null && "§6Aspect of the Dragon".equals(item.getItemMeta().getDisplayName())) {
+            if (hasUnlockedAbility(player)) {
+                if (canUseAbility(player)) {
+                    useDragonAbility(player);
+                    startCooldown(player);
+                } else {
+                    player.sendMessage("§cAbility is on cooldown!");
+                }
+            } else if (checkCombatLevel(player, 17)) {
+                unlockedPlayers.add(player.getUniqueId());
+                player.sendMessage("§aYou have unlocked the full power of the Aspect of the Dragon!");
+            } else {
+                player.sendMessage("§cYou need Combat Level XVII to use this sword's ability!");
+            }
+        }
+    }
+
+    @EventHandler
+    public void onEntityHit(EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof Player) {
+            Player player = (Player) event.getDamager();
+            ItemStack item = player.getInventory().getItemInMainHand();
+
+            if (item.getItemMeta() != null && "§6Aspect of the Dragon".equals(item.getItemMeta().getDisplayName())) {
+                if (!hasUnlockedAbility(player) && !checkCombatLevel(player, 17)) {
+                    event.setCancelled(true);
+                    player.sendMessage("§cYou need Combat Level XVII to deal damage with this sword!");
+                }
+            }
+        }
+    }
+
+    private boolean hasUnlockedAbility(Player player) {
+        return unlockedPlayers.contains(player.getUniqueId());
+    }
+
+    private boolean checkCombatLevel(Player player, int requiredLevel) {
+        // Placeholder for actual combat level retrieval logic
+        return getPlayerCombatLevel(player) >= requiredLevel;
+    }
+
+    private int getPlayerCombatLevel(Player player) {
+        // Placeholder: Implement your actual combat level logic here
+        return 17; // Example, replace with real logic
+    }
+
+    private boolean canUseAbility(Player player) {
+        if (cooldowns.containsKey(player.getUniqueId())) {
+            long timeLeft = (cooldowns.get(player.getUniqueId()) - System.currentTimeMillis()) / 1000;
+            return timeLeft <= 0;
+        }
+        return true;
+    }
+
+    private void startCooldown(Player player) {
+        cooldowns.put(player.getUniqueId(), System.currentTimeMillis() + (cooldownTime * 1000));
+    }
+
+    private void useDragonAbility(Player player) {
+        player.sendMessage("§aYou used the Dragon's ability!");
+
+        // Example ability: Launch mobs within a radius into the air
+        player.getNearbyEntities(5, 5, 5).forEach(entity -> {
+            if (entity instanceof LivingEntity) {
+                LivingEntity target = (LivingEntity) entity;
+                target.setVelocity(target.getVelocity().setY(1));
+                target.damage(10.0); // Example damage
+            }
+        });
+    }
+}
