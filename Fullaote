@@ -1,3 +1,4 @@
+import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.command.Command;
 import org.bukkit.Bukkit;
@@ -10,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+
 import java.util.Arrays;
 
 public class SkyblockPlugin extends JavaPlugin implements Listener {
@@ -24,15 +26,26 @@ public class SkyblockPlugin extends JavaPlugin implements Listener {
         ItemStack item = new ItemStack(Material.DIAMOND_SWORD);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName("&9Aspect of the End");
-            meta.setLore(Arrays.asList("&7Damage:&c+100", "&7Strength:&c+100", " ", "&6Ability: &e&lRIGHT CLICK", "Teleports you to 8 block forward", "&bMana Cost:&850", " ", "&7Cooldown:&73 seconds", " ", "&8This item can be.reforged", "&9&lRARE SWORD"));
+            meta.setDisplayName(ChatColor.BLUE + "Aspect of the End");
+            meta.setLore(Arrays.asList(
+                ChatColor.GRAY + "Damage:" + ChatColor.RED + "+100",
+                ChatColor.GRAY + "Strength:" + ChatColor.RED + "+100",
+                " ",
+                ChatColor.GOLD + "Ability: " + ChatColor.YELLOW + ChatColor.BOLD + "RIGHT CLICK",
+                "Teleports you 8 blocks forward",
+                ChatColor.AQUA + "Mana Cost:" + ChatColor.DARK_RED + "50",
+                " ",
+                ChatColor.GRAY + "Cooldown:" + ChatColor.RED + "3 seconds",
+                " ",
+                ChatColor.DARK_GRAY + "This item can be reforged",
+                ChatColor.BLUE + ChatColor.BOLD + "RARE SWORD"
+            ));
             item.setItemMeta(meta);
         }
         return item;
     }
 
     public void setupRecipe() {
-//recipe 
         org.bukkit.inventory.Recipe aote = new org.bukkit.inventory.ShapedRecipe(createAspectOfTheEnd())
                 .shape(" B ", " B ", " T ")
                 .setIngredient('B', Material.ENDER_PEARL)
@@ -47,14 +60,14 @@ public class SkyblockPlugin extends JavaPlugin implements Listener {
                 Player player = (Player) sender;
                 if (player.isOp()) { 
                     player.getInventory().addItem(createAspectOfTheEnd());
-                    player.sendMessage("&6&l[+]Aspect Of End");
+                    player.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "[+]Aspect Of End");
                     return true;
                 } else {
-                    player.sendMessage("&cNo permission.");
+                    player.sendMessage(ChatColor.RED + "No permission.");
                     return true;
                 }
             } else {
-                sender.sendMessage("&7Operators can only use this!");
+                sender.sendMessage(ChatColor.GRAY + "Operators can only use this!");
                 return true;
             }
         }
@@ -66,42 +79,33 @@ public class SkyblockPlugin extends JavaPlugin implements Listener {
         if (event.getItem() != null && event.getItem().isSimilar(createAspectOfTheEnd())) {
             Player player = event.getPlayer();
 
-            
             if (player.getCooldown(Material.DIAMOND_SWORD) > 0) {
-                player.sendMessage("&7Cooldown!!");
+                player.sendMessage(ChatColor.GRAY + "Cooldown!!");
                 return;
             }
 
-
-            teleportForward(player);
-
-            // cool down 
-            applyCooldown(player);
+            if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+                teleportForward(player);
+                applyCooldown(player);
+            }
         }
     }
 
     private void teleportForward(Player player) {
-      
-        org.bukkit.util.Vector 
-
-
-            
-direction = player.getLocation().getDirection().normalize().multiply(8);
+        org.bukkit.util.Vector direction = player.getLocation().getDirection().normalize().multiply(8);
         org.bukkit.Location newLocation = player.getLocation().add(direction);
         player.teleport(newLocation);
-        
     }
 
     private void applyCooldown(Player player) {
-        
-        final long cooldownTime = 250L; 
+        final int cooldownTime = 60 * 20; // 3 seconds
 
-        player.setCooldown(Material.DIAMOND_SWORD, (int) cooldownTime);
+        player.setCooldown(Material.DIAMOND_SWORD, cooldownTime);
 
         new BukkitRunnable() {
             @Override
             public void run() {
-                player.sendMessage("&7Cool-Down finished &6&lRight Click &7to use ");
+                player.sendMessage(ChatColor.GRAY + "Cooldown finished. " + ChatColor.GOLD + ChatColor.BOLD + "Right Click" + ChatColor.GRAY + " to use.");
             }
         }.runTaskLater(this, cooldownTime);
     }
