@@ -1,0 +1,107 @@
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.Arrays;
+import java.util.UUID;
+
+public class LightWeightSwordPlugin extends JavaPlugin implements Listener, CommandExecutor {
+
+    @Override
+    public void onEnable() {
+        getServer().getPluginManager().registerEvents(this, this)
+        getCommand("cilightweight").setExecutor(this);
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (command.getName().equalsIgnoreCase("cilightweight")) {
+            if (sender instanceof Player) {
+                Player player = (Player) sender;
+                if (player.isOp()) {                    player.getInventory().addItem(createLightWeightSword());
+                    player.sendMessage(ChatColor.GREEN + "You have received the Sword of LightWeight!");
+                } else {
+                    player.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
+                }
+            } else {
+                sender.sendMessage("Only operators can use this");
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public ItemStack createLightWeightSword() {
+        ItemStack sword = new ItemStack(Material.DIAMOND_SWORD);
+        ItemMeta meta = sword.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.AQUA + "Sword of LightWeight");
+            meta.addAttributeModifier(Attribute.GENERIC_ATTACK_DAMAGE,
+                    new AttributeModifier(UUID.randomUUID(), "generic.attackDamage", 80, AttributeModifier.Operation.ADD_NUMBER));
+            meta.addAttributeModifier(Attribute.GENERIC_ATTACK_SPEED,
+                    new AttributeModifier(UUID.randomUUID(), "generic.attackSpeed", 0.2, AttributeModifier.Operation.ADD_SCALAR));
+            meta.addAttributeModifier(Attribute.GENERIC_MOVEMENT_SPEED,
+                    new AttributeModifier(UUID.randomUUID(), "generic.movementSpeed", 0.15, AttributeModifier.Operation.ADD_SCALAR));
+            meta.setLore(Arrays.asList(ChatColor.GRAY + " Damage:" + ChatColor.RED + "+80", ChatColor.GRAY + "Strength:" + ChatColor.RED + "+25", ChatColor.GRAY + "Attack Speed:", ChatColor.RED + "+20%", "", ChatColor.GRAY + " Speed:" + ChatColor.GREEN + "+15", ));
+
+            sword.setItemMeta(meta);
+        }
+        return sword;
+    }
+
+    public void onPlayerUseSword(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        ItemStack item = player.getInventory().getItemInMainHand();
+
+        // Check if the player is holding the Sword of LightWeight
+        if (item.hasItemMeta() && item.getItemMeta().getDisplayName().equals(ChatColor.AQUA + "Sword of LightWeight")) {
+            // Check if the player has enough mana (implement mana logic elsewhere)
+            if (hasEnoughMana(player, 80)) {
+                // Deduct mana
+                deductMana(player, 80);
+
+                // Apply speed boost
+                player.setWalkSpeed(0.4f); // 0.2f is the normal speed, so 0.4f is double speed
+
+                // Set cooldown
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        player.setWalkSpeed(0.2f); // Revert to normal speed after 30 seconds
+                    }
+                }.runTaskLater(this, 600); // 600 ticks = 30 seconds
+
+                // Start cooldown (implement cooldown logic elsewhere)
+                startCooldown(player, 15);
+            } else {
+                player.sendMessage(ChatColor.RED + "Not enough mana!");
+            }
+        }
+    }
+
+    // Implement the methods hasEnoughMana, deductMana, and startCooldown according to your plugin's logic.
+    private boolean hasEnoughMana(Player player, int manaCost) {
+        // Implement mana checking logic here
+        return true; // Placeholder
+    }
+
+    private void deductMana(Player player, int manaCost) {
+        // Implement mana deduction logic here
+    }
+
+    private void startCooldown(Player player, int cooldownSeconds) {
+        // Implement cooldown logic here
+    }
+}
