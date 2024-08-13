@@ -1,0 +1,149 @@
+
+
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.command.Command;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.UUID;
+
+public class roguesword extends JavaPlugin implements Listener {
+
+    private final HashMap<UUID, Long> cooldowns = new HashMap<>();
+    private final int cooldownTime = 10; // Cooldown time in seconds
+    private final int manaCost = 50; // Mana cost for the ability
+
+    @Override
+    public void onEnable() {
+        this.getCommand("cirogue").setExecutor(new CommandExecutor() {
+            @Override
+            public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+                if (sender instanceof Player) {
+                    Player player = (Player) sender;
+                    if (player.isOp()) {
+                        player.getInventory().addItem(createRogueSword());
+                        player.sendMessage("§6You have been given the Rogue Sword!");
+                        return true;
+                    } else {
+                        player.sendMessage("§cYou do not have permission to use this command.");
+                        return true;
+                    }
+                } else if (sender instanceof ConsoleCommandSender) {
+                    sender.sendMessage("§cThis command can only be executed by a player.");
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        getServer().getPluginManager().registerEvents(this, this);
+    }
+
+    private ItemStack createRogueSword() {
+        ItemStack sword = new ItemStack(Material.GOLDEN_SWORD);
+        ItemMeta meta = sword.getItemMeta();
+
+        if (meta != null) {
+            meta.setDisplayName("§fRogue Sword");
+
+            AttributeModifier damageModifier = new AttributeModifier(UUID.randomUUID(), "generic.attackDamage", 20, AttributeModifier.Operation.ADD_NUMBER);
+            meta.addAttributeModifier(Attribute.GENERIC_ATTACK_DAMAGE, damageModifier);
+
+            // sword lore
+            meta.setLore(Arrays.asList(
+                "§7Damage: §c+20",
+                "§7",
+                "§6Ability: Speed Boost §e§lRIGHT CLICK",
+                "§7Grants §aSpeed II §7for §e30s§7.",
+                "§7Mana Cost: §b50",
+                "§7Cooldown: §a10s",
+                "§7",
+                "§f§lCOMMON SWORD"
+            ));
+
+            sword.setItemMeta(meta);
+        }
+        return sword;
+    }
+
+    @EventHandler
+    public void onPlayerUse(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        ItemStack item = player.getInventory().getItemInMainHand();
+
+        if (item.getItemMeta() != null && "§fRogue Sword".equals(item.getItemMeta().getDisplayName())) {
+            if (canUseAbility(player)) {
+                if (consumeMana(player, manaCost)) {
+                    useSpeedBoost(player);
+                    startCooldown(player);
+                } else {
+                    player.sendMessage("§cYou don't have enough mana!");
+                }
+            } else {
+                player.sendMessage(" Cool-Down !");
+            }
+        }
+    }
+
+    private boolean canUseAbility(Player player) {
+        if (cooldowns.containsKey(player.getUniqueId())) {
+            long timeLeft = (cooldowns.get(player.getUniqueId()) - System.currentTimeMillis()) / 1000;
+            return timeLeft <= 0;
+        }
+        return true;
+    }
+
+    private void startCooldown(Player player) {
+        cooldowns.put(player.getUniqueId(), System.currentTimeMillis() + (cooldownTime * 1000));
+    }
+
+    private boolean consumeMana(Player player, int manaCost) {
+        // Placeholder: Replace with your actual mana system
+        // Assume player has a getMana() and setMana() method
+        int playerMana = getPlayerMana(player);
+
+        if (playerMana >= manaCost) {
+            setPlayerMana(player, playerMana - manaCost);
+            return true;
+        }
+        return false;
+    }
+
+    private void useSpeedBoost(Player player) {
+       
+
+       
+        player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 30 * 20, 1, true, true));
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+p.sendmessage("Right click to use again")
+            }
+        }.runTaskLater(this, 30 * 20);
+    }
+
+    private int getPlayerMana(Player player) {
+        return 100;
+    }
+
+    private void setPlayerMana(Player player, int mana) {
+        player.sendMessage("§bMana: " + mana);
+    }
+}
