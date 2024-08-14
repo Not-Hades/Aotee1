@@ -48,8 +48,6 @@ public class hastysword extends JavaPlugin implements Listener {
                 return false;
             }
         });
-
-        // Register events
         getServer().getPluginManager().registerEvents(this, this);
     }
 
@@ -65,8 +63,6 @@ public class hastysword extends JavaPlugin implements Listener {
             meta.addAttributeModifier(Attribute.GENERIC_ATTACK_DAMAGE, damageModifier);
             AttributeModifier speedModifier = new AttributeModifier(UUID.randomUUID(), "generic.movementSpeed", 0.05, AttributeModifier.Operation.ADD_NUMBER);
             meta.addAttributeModifier(Attribute.GENERIC_MOVEMENT_SPEED, speedModifier);
-
-            // Add lore
             meta.setLore(Arrays.asList(
                 "§7Damage: §c+30",
                 "§7Speed: §a+5%",
