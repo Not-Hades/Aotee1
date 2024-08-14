@@ -16,7 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class YourPlugin extends JavaPlugin implements Listener {
+public class aotd extends JavaPlugin implements Listener {
 
     private final HashMap<UUID, Long> cooldowns = new HashMap<>();
     private final int cooldownTime = 30; // Cooldown time in seconds
@@ -24,14 +24,14 @@ public class YourPlugin extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        this.getCommand("giveaspectdragon").setExecutor(new CommandExecutor() {
+        this.getCommand("ciaspectdragon").setExecutor(new CommandExecutor() {
             @Override
             public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
                 if (sender instanceof Player) {
                     Player player = (Player) sender;
                     if (player.isOp()) {
                         player.getInventory().addItem(createAspectOfTheDragon());
-                        player.sendMessage("§6You have been given the Aspect of the Dragon!");
+                        player.sendMessage("§6[+]Aspect of Dragon");
                         return true;
                     } else {
                         player.sendMessage("§cYou do not have permission to use this command.");
@@ -59,7 +59,7 @@ public class YourPlugin extends JavaPlugin implements Listener {
                 "§7",
                 "§6Ability: Dragon Rage §e§lRIGHT CLICK",
                 "§7Launches nearby enemies into the air,",
-                "§7dealing §cdamage§7 to them.",
+                "§7dealing §c+500 Damage§7 to them.",
                 "§7",
                 "§8Cooldown: §a30s",
                 "§7Requires §bCombat Level XVII§7 to use.",
@@ -113,12 +113,12 @@ public class YourPlugin extends JavaPlugin implements Listener {
     }
 
     private boolean checkCombatLevel(Player player, int requiredLevel) {
-        // Placeholder for actual combat level retrieval logic
+       
         return getPlayerCombatLevel(player) >= requiredLevel;
     }
 
     private int getPlayerCombatLevel(Player player) {
-        // Placeholder: Implement your actual combat level logic here
+       
         return 17; // Example, replace with real logic
     }
 
@@ -137,12 +137,11 @@ public class YourPlugin extends JavaPlugin implements Listener {
     private void useDragonAbility(Player player) {
         player.sendMessage("§aYou used the Dragon's ability!");
 
-        // Example ability: Launch mobs within a radius into the air
         player.getNearbyEntities(5, 5, 5).forEach(entity -> {
             if (entity instanceof LivingEntity) {
                 LivingEntity target = (LivingEntity) entity;
                 target.setVelocity(target.getVelocity().setY(1));
-                target.damage(10.0); // Example damage
+                target.damage(50.0);
             }
         });
     }
