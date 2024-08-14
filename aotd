@@ -16,10 +16,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class aotd extends JavaPlugin implements Listener {
+public class aotd extends aotd implements Listener {
 
     private final HashMap<UUID, Long> cooldowns = new HashMap<>();
-    private final int cooldownTime = 30; // Cooldown time in seconds
+    private final int cooldownTime = 30;
     private final Set<UUID> unlockedPlayers = new HashSet<>();
 
     @Override
