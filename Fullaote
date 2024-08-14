@@ -16,7 +16,7 @@ import org.bukkit.event.block.Action; // Import this for Action
 
 import java.util.Arrays;
 
-public class SkyblockPlugin extends JavaPlugin implements Listener {
+public class Fullaote extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         getServer().getPluginManager().registerEvents(this, this);
