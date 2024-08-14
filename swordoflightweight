@@ -54,7 +54,7 @@ public class LightWeightSwordPlugin extends JavaPlugin implements Listener, Comm
                     new AttributeModifier(UUID.randomUUID(), "generic.attackSpeed", 0.2, AttributeModifier.Operation.ADD_SCALAR));
             meta.addAttributeModifier(Attribute.GENERIC_MOVEMENT_SPEED,
                     new AttributeModifier(UUID.randomUUID(), "generic.movementSpeed", 0.15, AttributeModifier.Operation.ADD_SCALAR));
-            meta.setLore(Arrays.asList(ChatColor.GRAY + " Damage:" + ChatColor.RED + "+80", ChatColor.GRAY + "Strength:" + ChatColor.RED + "+25", ChatColor.GRAY + "Attack Speed:", ChatColor.RED + "+20%", "", ChatColor.GRAY + " Speed:" + ChatColor.GREEN + "+15", ));
+            meta.setLore(Arrays.asList(ChatColor.GRAY + " Damage:" + ChatColor.RED + "+80", ChatColor.GRAY + "Strength:" + ChatColor.RED + "+25", ChatColor.GRAY + "Attack Speed:", ChatColor.RED + "+20%", "", ChatColor.GRAY + " Speed:" + ChatColor.GREEN + "+15", "", ChatColor.GOLD + "Ability:" + ChatColor.YELLOW + "" + ChatColor.BOLD + "RIGHT CLICK",  ));
 
             sword.setItemMeta(meta);
         }
@@ -65,25 +65,19 @@ public class LightWeightSwordPlugin extends JavaPlugin implements Listener, Comm
         Player player = event.getPlayer();
         ItemStack item = player.getInventory().getItemInMainHand();
 
-        // Check if the player is holding the Sword of LightWeight
         if (item.hasItemMeta() && item.getItemMeta().getDisplayName().equals(ChatColor.AQUA + "Sword of LightWeight")) {
-            // Check if the player has enough mana (implement mana logic elsewhere)
             if (hasEnoughMana(player, 80)) {
-                // Deduct mana
-                deductMana(player, 80);
-
-                // Apply speed boost
-                player.setWalkSpeed(0.4f); // 0.2f is the normal speed, so 0.4f is double speed
-
-                // Set cooldown
+                
+                deductMana(player,) 
+                player.setWalkSpeed(0.4f); 
+                
                 new BukkitRunnable() {
                     @Override
                     public void run() {
-                        player.setWalkSpeed(0.2f); // Revert to normal speed after 30 seconds
+                        player.setWalkSpeed(0.2f);
                     }
                 }.runTaskLater(this, 600); // 600 ticks = 30 seconds
 
-                // Start cooldown (implement cooldown logic elsewhere)
                 startCooldown(player, 15);
             } else {
                 player.sendMessage(ChatColor.RED + "Not enough mana!");
@@ -91,17 +85,6 @@ public class LightWeightSwordPlugin extends JavaPlugin implements Listener, Comm
         }
     }
 
-    // Implement the methods hasEnoughMana, deductMana, and startCooldown according to your plugin's logic.
-    private boolean hasEnoughMana(Player player, int manaCost) {
-        // Implement mana checking logic here
-        return true; // Placeholder
-    }
-
-    private void deductMana(Player player, int manaCost) {
-        // Implement mana deduction logic here
-    }
-
     private void startCooldown(Player player, int cooldownSeconds) {
-        // Implement cooldown logic here
     }
 }
