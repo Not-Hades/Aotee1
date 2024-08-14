@@ -1,0 +1,17 @@
+name: boostercookie
+version: 1.0
+main: aotee1
+author: Hades Cevron
+description: Gives booster Cookie
+
+commands:
+  givebooster:
+    description: Gives the player a Booster Cookie.
+    usage: /<command>
+    permission: booster.cookie.give
+    permission-message: You do not have permission to use this command.
+
+permissions:
+  booster.cookie.give:
+    description: Allows the player to use the /givebooster command.
+    default: op
